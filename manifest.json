@@ -3,17 +3,20 @@
   "name": "YouTube Caption Search",
   "version": "1.0",
   "description": "Search captions in YouTube videos and snap to specific timestamps.",
-  "permissions": ["scripting", "storage", "activeTab"],
+  "permissions": ["scripting", "activeTab", "webNavigation"],
   "host_permissions": ["https://www.youtube.com/*"],
-  "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon.png",
-      "48": "icon.png",
-      "128": "icon.png"
-    }
-  },
   "background": {
     "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
   }
 }

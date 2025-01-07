@@ -2,15 +2,23 @@ document
   .getElementById('search-bar')
   .addEventListener('input', async function () {
     const query = this.value.trim().toLowerCase();
+
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '';
-
+    console.log('query found:', query);
     if (!query) return;
 
-    const captions = await getCaptions(); // Fetch captions dynamically
+    const captions = await getCaptions();
     const matches = captions.filter((cap) =>
       cap.text.toLowerCase().includes(query)
     );
+    console.log('captions found:', captions);
+    console.log('Matches found:', matches);
+
+    if (matches.length === 0) {
+      resultsDiv.textContent = 'No matches found.';
+      return;
+    }
 
     matches.forEach((match) => {
       const resultDiv = document.createElement('div');
@@ -26,37 +34,31 @@ document
 async function getCaptions() {
   return new Promise((resolve) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tabs[0].id },
-          func: fetchCaptions,
-        },
-        (results) => {
-          resolve(results[0].result || []);
+      if (!tabs[0]) {
+        console.error('No active tab found.');
+        resolve([]);
+        return;
+      }
+
+      console.log('Sending message to content script...');
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { action: 'fetchCaptions' },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error(
+              'Error communicating with content script:',
+              chrome.runtime.lastError.message
+            );
+            resolve([]);
+            return;
+          }
+          console.log('Response from content script:', response);
+          resolve(response?.captions || []);
         }
       );
     });
   });
-}
-
-function fetchCaptions() {
-  const captions = [];
-  const tracks = document.querySelectorAll('track');
-  tracks.forEach((track) => {
-    if (track.kind === 'subtitles') {
-      const cues = track.track.cues;
-      if (cues) {
-        Array.from(cues).forEach((cue) => {
-          captions.push({
-            start: cue.startTime,
-            end: cue.endTime,
-            text: cue.text,
-          });
-        });
-      }
-    }
-  });
-  return captions;
 }
 
 function snapToTimestamp(timestamp) {

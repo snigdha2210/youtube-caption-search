@@ -27,3 +27,19 @@ chrome.action.onClicked.addListener((tab) => {
   // Open popup if required or toggle some feature
   console.log('Extension action clicked on tab:', tab);
 });
+chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
+  if (details.url.includes('youtube.com/watch')) {
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: details.tabId },
+        files: ['content.js'],
+      },
+      () => {
+        console.log(
+          'Content script injected via webNavigation event:',
+          details.url
+        );
+      }
+    );
+  }
+});
