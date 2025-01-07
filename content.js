@@ -6,11 +6,6 @@ const RE_XML_TRANSCRIPT =
   /<text start="([\d.]+)" dur="([\d.]+)">(.+?)<\/text>/g;
 const RE_YOUTUBE = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([\w-]+)/;
 
-/**
- * Retrieve video ID from a URL or video ID string.
- * @param {string} videoId - The YouTube video URL or ID.
- * @returns {string} - The YouTube video ID.
- */
 function retrieveVideoId(videoId) {
   if (videoId.length === 11) {
     return videoId;
@@ -22,13 +17,6 @@ function retrieveVideoId(videoId) {
   throw new Error('Unable to retrieve YouTube video ID.');
 }
 
-/**
- * Fetch transcript for a YouTube video.
- * @param {string} videoId - The YouTube video URL or ID.
- * @param {Object} [config] - Configuration object (e.g., language).
- * @param {string} [config.lang] - Language code (ISO).
- * @returns {Promise<Array>} - Parsed transcript entries.
- */
 async function fetchTranscript(videoId, config) {
   const identifier = retrieveVideoId(videoId);
 
@@ -113,144 +101,3 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Indicates asynchronous response
   }
 });
-// console.log('Content script loaded on:', window.location.href);
-// if (!window.contentScriptLoaded) {
-//   window.contentScriptLoaded = true;
-
-//   console.log('Content script loaded on:', window.location.href);
-
-//   // Observer to detect changes in the DOM
-//   const observer = new MutationObserver(() => {
-//     const trackElements = document.querySelectorAll('track');
-//     if (trackElements.length > 0) {
-//       console.log('Tracks detected:', trackElements);
-//       observer.disconnect(); // Stop observing once tracks are found
-//     }
-//   });
-
-//   observer.observe(document.body, { childList: true, subtree: true });
-// }
-// async function fetchTranscript() {
-//   console.log('Attempting to fetch transcript via YouTube API...');
-
-//   // Extract the video ID from the URL
-//   const videoId = new URLSearchParams(window.location.search).get('v');
-//   if (!videoId) {
-//     console.error('No video ID found in URL.');
-//     return [];
-//   }
-
-//   try {
-//     // Call YouTube's transcript API
-//     const response = await fetch(
-//       `https://www.youtube.com/api/timedtext?lang=en&v=${videoId}`
-//     );
-//     if (!response.ok) {
-//       console.error('Failed to fetch transcript:', response.status);
-//       return [];
-//     }
-
-//     const text = await response.text();
-
-//     // Parse the XML response
-//     const parser = new DOMParser();
-//     const xml = parser.parseFromString(text, 'application/xml');
-//     const transcript = Array.from(xml.getElementsByTagName('text')).map(
-//       (node) => ({
-//         start: parseFloat(node.getAttribute('start')),
-//         duration: parseFloat(node.getAttribute('dur')),
-//         text: node.textContent,
-//       })
-//     );
-
-//     console.log('Transcript fetched:', transcript);
-//     return transcript;
-//   } catch (error) {
-//     console.error('Error fetching transcript:', error);
-//     return [];
-//   }
-// }
-
-// async function fetchCaptions() {
-//   console.log('fetchCaptions function called');
-
-//   const captions = [];
-//   const trackElements = document.querySelectorAll('track');
-
-//   if (trackElements.length > 0) {
-//     console.log('Tracks detected:', trackElements);
-
-//     trackElements.forEach((track) => {
-//       if (track.kind === 'subtitles' || track.kind === 'captions') {
-//         const cues = track.track?.cues;
-//         if (cues) {
-//           Array.from(cues).forEach((cue) => {
-//             captions.push({
-//               start: cue.startTime,
-//               end: cue.endTime,
-//               text: cue.text,
-//             });
-//           });
-//         }
-//       }
-//     });
-
-//     console.log('Captions fetched from <track> elements:', captions);
-//     return captions;
-//   } else {
-//     console.log('No <track> elements found. Falling back to YouTube API...');
-//     const transcript = await fetchTranscript();
-//     return transcript;
-//   }
-// }
-
-// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-//   if (message.action === 'fetchCaptions') {
-//     const captions = fetchCaptions();
-//     console.log('Captions sent to popup:', captions);
-//     sendResponse({ captions });
-//   }
-// });
-
-// // // Ensure captions are fetched when present
-// // const observer = new MutationObserver(() => {
-// //   const trackElements = document.querySelectorAll('track');
-// //   if (trackElements.length > 0) {
-// //     console.log('Tracks detected:', trackElements);
-// //     observer.disconnect(); // Stop observing once tracks are found
-// //   }
-// // });
-
-// // observer.observe(document.body, { childList: true, subtree: true });
-
-// // function fetchCaptions() {
-// //   console.log('fetch function called');
-// //   const captions = [];
-// //   const trackElements = document.querySelectorAll('track');
-
-// //   trackElements.forEach((track) => {
-// //     if (track.kind === 'subtitles' || track.kind === 'captions') {
-// //       const cues = track.track?.cues;
-// //       if (cues) {
-// //         Array.from(cues).forEach((cue) => {
-// //           captions.push({
-// //             start: cue.startTime,
-// //             end: cue.endTime,
-// //             text: cue.text,
-// //           });
-// //         });
-// //       }
-// //     }
-// //   });
-
-// //   console.log('Captions fetched:', captions);
-// //   return captions;
-// // }
-
-// // chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-// //   if (message.action === 'fetchCaptions') {
-// //     const captions = fetchCaptions();
-// //     console.log('Captions sent to popup:', captions);
-// //     sendResponse({ captions });
-// //   }
-// // });
